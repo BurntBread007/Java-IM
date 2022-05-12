@@ -16,7 +16,7 @@ public class ClientHandler implements Runnable{
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.clientUsername = bufferedReader.readLine();
             clientHandlers.add(this);
-            broadcastMessage("SERVER : " + clientUsername + " has entered the chat.");
+            broadcastMessage("SERVER : " + clientUsername + " has entered the chat.\nThere are now "+ClientHandler.clientHandlers.size()+" users in chat.");
             } catch (IOException e) {
                 closeEverything(socket, bufferedReader, bufferedWriter);
             }
@@ -30,6 +30,7 @@ public class ClientHandler implements Runnable{
             try {
                 messageFromClient = bufferedReader.readLine();
                 broadcastMessage(messageFromClient);
+                System.out.println(messageFromClient);
             } catch (IOException e) {
                 closeEverything(socket, bufferedReader, bufferedWriter);
                 break;
@@ -53,7 +54,7 @@ public class ClientHandler implements Runnable{
 
     public void removeClientHandler() {
         clientHandlers.remove(this);
-        broadcastMessage("SERVER : " + clientUsername + " has left the chat.");
+        broadcastMessage("SERVER : " + clientUsername + " has left the chat.\n"+clientHandlers.size()+" users are left.");
     }
 
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
@@ -73,6 +74,18 @@ public class ClientHandler implements Runnable{
         return username;
     }
     public static String getAllNames() {
-        return "a";
+        int counter = 0;
+        String nameList = "";
+        ClientHandler user;
+        String name;
+        
+        while(counter < clientHandlers.size()) {
+            user = clientHandlers.get(counter);
+            name = user.clientUsername;
+            nameList += name;
+            if(!(counter == (clientHandlers.size()-1))) { nameList += ", "; }
+            counter++;
+        }
+        return nameList;
     }
 }
