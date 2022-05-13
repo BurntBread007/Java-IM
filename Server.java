@@ -1,3 +1,8 @@
+// Java IM Program, v0.1
+// SERVER EXECUTABLE
+//
+// developed by BurntBread007, 5/13/2022
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -5,33 +10,16 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Server {
+    // Private class variables
     private final ServerSocket serverSocket;
     private static Scanner scanner = new Scanner(System.in);
 
+    // Class constructor, connects the server.
     public Server(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
     }
 
-    public void startServer() {
-        try {
-            while(!serverSocket.isClosed()) {
-                Socket socket = serverSocket.accept();
-                ClientHandler clientHandler = new ClientHandler(socket);
-
-                Thread thread = new Thread(clientHandler);
-                thread.start();
-                System.out.println("SERVER : \"" + ClientHandler.getName(ClientHandler.clientHandlers.size()-1) + "\" has connected.\nThere are now "+ClientHandler.clientHandlers.size()+" users in chat.");
-                System.out.println("Users online: "+ClientHandler.nameList+"\n");
-            }
-        } catch (IOException e) {}
-    }
-
-    public void closeServerSocket() {
-        try {
-            if(serverSocket != null) { serverSocket.close(); }
-        } catch (IOException e) { e.printStackTrace(); }
-    }
-
+    // MAIN SERVER METHOD
     public static void main(String[] args) throws IOException {
         System.out.println("\nEnter a 4-digit room code to host...");
         int port = scanner.nextInt();
@@ -45,4 +33,24 @@ public class Server {
         System.out.println("\n\n====================\nSERVER CHAT LOG\n====================");
         server.startServer();
     }
+
+    // Starts a ClientHandler thread to each newly connected user.
+    public void startServer() {
+        try {
+            while(!serverSocket.isClosed()) {
+                Socket socket = serverSocket.accept();
+                ClientHandler clientHandler = new ClientHandler(socket);
+                Thread thread = new Thread(clientHandler);
+                thread.start();
+            }
+        } catch (IOException e) {}
+    }
+
+    // Disconnects the server.
+    public void closeServerSocket() {
+        try {
+            if(serverSocket != null) { serverSocket.close(); }
+        } catch (IOException e) { e.printStackTrace(); }
+    }
 }
+

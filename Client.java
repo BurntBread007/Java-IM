@@ -1,3 +1,8 @@
+// Java IM Program, v0.1
+// CLIENT EXECUTABLE
+//
+// developed by BurntBread007, 5/13/2022
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -7,13 +12,14 @@ import java.time.LocalTime;
 
 public class Client {
 
+    //Private class variables
     private Socket socket;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     private String username;
-
     private static Scanner scanner = new Scanner(System.in);
 
+    // CLass constructor, connects private class variables with parameters.
     public Client(Socket socket, String username) {
         try {
             this.socket = socket;
@@ -25,6 +31,21 @@ public class Client {
         }
     }
 
+    // MAIN CLIENT METHOD
+    public static void main(String[] args) throws UnknownHostException, IOException {
+        System.out.println("\nEnter your username...");
+        String username = scanner.nextLine();
+        if(username == "") { username = "Anonymoose"; }
+        //String ip = askIp();
+        //int port = askPort();
+        Socket socket = new Socket(askIp(), askPort());
+        Client client = new Client(socket, username);
+        System.out.println("\n\nConnected to room! Have fun ;)\n\n====================\n\tCHAT\n====================");
+        client.listenForMessage();
+        client.sendMessage();
+    }
+
+    // Methods for retrieving and sending messages to and from the connected server.
     public void sendMessage() {
         try {
             bufferedWriter.write(username);
@@ -44,6 +65,7 @@ public class Client {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
+    // Additionally, listenForMessage() wanrs user of server disconnect, whenever that may occur.
     public void listenForMessage() {
         new Thread(new Runnable() {
             public void run() {
@@ -53,7 +75,9 @@ public class Client {
                         msgFromGroupChat = bufferedReader.readLine();
                         System.out.println(msgFromGroupChat);
                     } catch (IOException e) {
+                        System.out.println("Server has closed. Please restart the program and find a new server to join.");
                         closeEverything(socket, bufferedReader, bufferedWriter);
+                        break;
                     }
                 }
             }
@@ -70,21 +94,7 @@ public class Client {
         }
     }
 
-    public static void main(String[] args) throws UnknownHostException, IOException {
-        System.out.println("\nEnter your username...");
-        String username = scanner.nextLine();
-        if(username == "") { username = "Anonymoose"; }
-
-        String ip = askIp();
-        int port = askPort();
-
-        Socket socket = new Socket(ip, port);
-        Client client = new Client(socket, username);
-        System.out.println("\n\nConnected to room! Have fun ;)\n\n====================\n\tCHAT\n====================");
-        client.listenForMessage();
-        client.sendMessage();
-    }
-
+    // Takes user input for the needed ip address and port numbers to connect witht the server.
     public static String askIp() throws IOException {
         String ip = "";
         boolean flag = false;
