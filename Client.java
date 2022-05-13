@@ -3,6 +3,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import java.time.LocalTime;
 
 public class Client {
 
@@ -29,10 +30,13 @@ public class Client {
             bufferedWriter.write(username);
             bufferedWriter.newLine();
             bufferedWriter.flush();
+            String messageToSend;
+            String time;
 
             while(socket.isConnected()) {
-                String messageToSend = scanner.nextLine();
-                bufferedWriter.write(username + " : " + messageToSend);
+                messageToSend = scanner.nextLine();
+                time = ((LocalTime.now()).toString()).substring(0, 8);
+                bufferedWriter.write("["+time+"] " + username + " : " + messageToSend);
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
             }
@@ -69,7 +73,7 @@ public class Client {
     public static void main(String[] args) throws UnknownHostException, IOException {
         System.out.println("\nEnter your username...");
         String username = scanner.nextLine();
-        if(username == "") { username = "IM A SUSSY BAKA :)"; }
+        if(username == "") { username = "Anonymoose"; }
 
         String ip = askIp();
         int port = askPort();
@@ -91,18 +95,18 @@ public class Client {
                 ip = scanner.nextLine();
                 if(ip == "") { ip = "localhost"; }
 
-                System.out.println("Pinging IP...");
+                System.out.println("Establishing connection...");
                 address = InetAddress.getByName(ip);
                 flag = address.isReachable(8000);
                 if(!flag) {
-                    System.out.println("Failed IP connection; timed out or inaccessible. Please try again, or type another IP.");
+                    System.out.println("Failed IP connection; possibly timed out or unreachable. Please try again, or type another IP.");
                 } else { System.out.println("Successfully connected to IP."); }
             }
-        } catch (UnknownHostException e) { System.out.println("Not a known IP or host. Please try again."); askIp(); }
+        } catch (UnknownHostException e) { System.out.println("Unknown IP or host. Please try again."); askIp(); }
         return ip;
     }
     public static int askPort() {
-        System.out.println("\nEnter a 4-digit room code to join...");
+        System.out.println("\nEnter a 4-digit 'room code' to join...\n(Aka port number)");
         int port = 0;
         port = scanner.nextInt();
         if( port == 0) { port = 7; }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class ClientHandler implements Runnable{
     public static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
+    public static ArrayList<String> nameList = new ArrayList<>();
     private Socket socket;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
@@ -16,7 +17,9 @@ public class ClientHandler implements Runnable{
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.clientUsername = bufferedReader.readLine();
             clientHandlers.add(this);
-            broadcastMessage("SERVER : " + clientUsername + " has entered the chat.\nThere are now "+ClientHandler.clientHandlers.size()+" users in chat.");
+            nameList.add(clientUsername);
+            broadcastEvent("SERVER : " + clientUsername + " has entered the chat.\nThere are now "+ClientHandler.clientHandlers.size()+" users in chat.");
+            broadcastEvent("Users online: "+nameList+"\n");
             } catch (IOException e) {
                 closeEverything(socket, bufferedReader, bufferedWriter);
             }
@@ -51,12 +54,28 @@ public class ClientHandler implements Runnable{
             }
         }
     }
+    public void broadcastEvent(String messageToSend) {
+        for(ClientHandler clientHandler : clientHandlers) {
+            try {
+                clientHandler.bufferedWriter.write(messageToSend);
+                clientHandler.bufferedWriter.newLine();
+                clientHandler.bufferedWriter.flush();
+            } catch (IOException e) {
+                closeEverything(socket, bufferedReader, bufferedWriter);
+            }
+        }
+    }
+
+    public static String getName(int index) {
+        ClientHandler user = clientHandlers.get(index);
+        String username = user.clientUsername;
+        return username;
+    }
 
     public void removeClientHandler() {
         clientHandlers.remove(this);
         broadcastMessage("SERVER : " + clientUsername + " has left the chat.\n"+clientHandlers.size()+" users are left.");
     }
-
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
         removeClientHandler();
         try {
@@ -66,26 +85,5 @@ public class ClientHandler implements Runnable{
         } catch (IOException e) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
-    }
-
-    public static String getName(int index) {
-        ClientHandler user = clientHandlers.get(index);
-        String username = user.clientUsername;
-        return username;
-    }
-    public static String getAllNames() {
-        int counter = 0;
-        String nameList = "";
-        ClientHandler user;
-        String name;
-        
-        while(counter < clientHandlers.size()) {
-            user = clientHandlers.get(counter);
-            name = user.clientUsername;
-            nameList += name;
-            if(!(counter == (clientHandlers.size()-1))) { nameList += ", "; }
-            counter++;
-        }
-        return nameList;
     }
 }

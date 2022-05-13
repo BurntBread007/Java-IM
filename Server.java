@@ -20,7 +20,8 @@ public class Server {
 
                 Thread thread = new Thread(clientHandler);
                 thread.start();
-                System.out.println("SERVER : \"" + ClientHandler.getName(ClientHandler.clientHandlers.size()-1) + "\" HAS CONNECTED\nThere are now "+ClientHandler.clientHandlers.size()+" users in chat.");
+                System.out.println("SERVER : \"" + ClientHandler.getName(ClientHandler.clientHandlers.size()-1) + "\" has connected.\nThere are now "+ClientHandler.clientHandlers.size()+" users in chat.");
+                System.out.println("Users online: "+ClientHandler.nameList+"\n");
             }
         } catch (IOException e) {}
     }
@@ -44,4 +45,4 @@ public class Server {
         System.out.println("\n\n====================\nSERVER CHAT LOG\n====================");
         server.startServer();
     }
-}   
+}
