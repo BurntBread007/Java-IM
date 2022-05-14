@@ -1,2 +1,2 @@
-jar --create --file=Server.jar --manifest=MANIFEST_SERVER.MF --no-compress --verbose Server.class ClientHandler.class
-jar --create --file=Client.jar --manifest=MANIFEST_CLIENT.MF --no-compress --verbose Client.class Client$1.class
+jar cvfm0 Server.jar MANIFEST_SERVER.MF Server.class ClientHandler.class
+jar cvfm0 Client.jar MANIFEST_CLIENT.MF Client.class Client$1.class
