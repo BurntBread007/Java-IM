@@ -1,11 +1,12 @@
-// Java IM Program, v0.1
+// Java IM Program, v0.1.1
 // FOR USE WITH SERVER CLASS
 //
-// developed by BurntBread007, 5/13/2022
+// developed by BurntBread007, 5/14/2022
 
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.lang.Math;
 
 public class ClientHandler implements Runnable{
     // Public ArrayLists. They have matching indexes per client, 
@@ -29,7 +30,12 @@ public class ClientHandler implements Runnable{
             clientHandlers.add(this);
             nameList.add(clientUsername);
 
-            String joinMessage = "\nSERVER : " + clientUsername + " has entered the chat.\nThere are now "+ClientHandler.clientHandlers.size()+" users in chat.";
+            String fileName = ".\\txt\\JoinMessages.txt";
+            int lines = getNumLines(fileName);
+            int min = 2;
+            int randLine = (int)(Math.random()*((lines+1)-min+1)+min);
+
+            String joinMessage = "\nSERVER : " + clientUsername + " " + readRandomLine(randLine, fileName) + "\nThere are now "+ClientHandler.clientHandlers.size()+" users in chat.";
             broadcastEvent(joinMessage);
             System.out.println(joinMessage);
             printNameList();
@@ -92,7 +98,12 @@ public class ClientHandler implements Runnable{
         clientHandlers.remove(this);
         nameList.remove(clientUsername);
 
-        String leaveMessage = "\nSERVER : " + clientUsername + " has left the chat.\n"+clientHandlers.size()+" users are left.";
+        String fileName = ".\\txt\\LeaveMessages.txt";
+        int lines = getNumLines(fileName);
+        int min = 2;
+        int randLine = (int)(Math.random()*((lines+1)-min+1)+min);
+
+        String leaveMessage = "\nSERVER : " + clientUsername + " " + readRandomLine(randLine, fileName) + "\n"+clientHandlers.size()+" users are left.";
         broadcastEvent(leaveMessage);
         System.out.println(leaveMessage);
         printNameList();
@@ -114,5 +125,29 @@ public class ClientHandler implements Runnable{
         String names = ("Users online: "+nameList+"\n").toString();
         System.out.println(names);
         broadcastEvent(names);
+    }
+
+    public static String readRandomLine(int randLine, String fileName) {
+        String ret = null;
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            for (int i = 0; i < randLine - 1; i++) { ret = reader.readLine(); }
+            reader.close();
+        }
+        catch (FileNotFoundException e) {}
+        catch (IOException e) {}
+        return ret;
+    }
+
+    public static int getNumLines(String fileName) {
+        int lines = 0;
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            lines = (int)(reader.lines().count());
+            reader.close();
+        }
+        catch (FileNotFoundException e) {}
+        catch (IOException e) {}
+        return lines;
     }
 }

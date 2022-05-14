@@ -1,7 +1,7 @@
-// Java IM Program, v0.1
+// Java IM Program, v0.1.1
 // SERVER EXECUTABLE
 //
-// developed by BurntBread007, 5/13/2022
+// developed by BurntBread007, 5/14/2022
 
 import java.io.*;
 import java.net.InetAddress;
