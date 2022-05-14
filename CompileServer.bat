@@ -1,2 +1,2 @@
-javac ./java/Server.java ./java/ClientHandler.java
-java -cp . Server
+javac ./java/Server.java ./java/ClientHandler.java -d ./classes
+java -cp ./classes Server

@@ -1,1 +1,1 @@
-java -jar Client.jar
+java -jar ./classes/jars/Client.jar

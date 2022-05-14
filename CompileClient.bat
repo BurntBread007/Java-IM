@@ -1,2 +1,2 @@
-javac ./java/Client.java
-java -cp . Client
+javac ./java/Client.java -d ./classes
+java -cp ./classes Client

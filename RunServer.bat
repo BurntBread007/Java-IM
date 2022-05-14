@@ -1,1 +1,1 @@
-java -jar Server.jar
+java -jar ./classes/jars/Server.jar
