@@ -1,4 +1,4 @@
-// Java IM Program, v0.1.1
+// Java IM Program, v0.1.2
 // CLIENT EXECUTABLE
 //
 // developed by BurntBread007, 5/14/2022
@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.time.LocalTime;
 
@@ -36,11 +37,13 @@ public class Client {
         System.out.println("\nEnter your username...");
         String username = scanner.nextLine();
         if(username == "") { username = "Anonymoose"; }
-        //String ip = askIp();
-        //int port = askPort();
-        Socket socket = new Socket(askIp(), askPort());
+        
+        String ip = askIp();
+        int port = askPort();
+        Socket socket = connectSocket(ip, port);
         Client client = new Client(socket, username);
-        System.out.println("\n\nConnected to room! Have fun ;)\n\n====================\n\tCHAT\n====================");
+
+        System.out.println("\n\nConnected to room! Have fun! \n\n====================\n\tCHAT\n====================");
         client.listenForMessage();
         client.sendMessage();
     }
@@ -75,7 +78,7 @@ public class Client {
                         msgFromGroupChat = bufferedReader.readLine();
                         System.out.println(msgFromGroupChat);
                     } catch (IOException e) {
-                        System.out.println("Server has closed. Please restart the program and find a new server to join.");
+                        System.out.println("\nServer has closed. Please restart the program and find a new server to join.");
                         closeEverything(socket, bufferedReader, bufferedWriter);
                         break;
                     }
@@ -120,6 +123,29 @@ public class Client {
         int port = 0;
         port = scanner.nextInt();
         if( port == 0) { port = 7; }
+        //} catch (InputMismatchException e) {
+        //System.out.println("INCORRECT PORT FORMAT. \nPlease enter only a number between 1024 and 65535; no letters or special characters.");
         return port;
+    }
+    // Assuming IP is correct, this tests connection to server on the given port.
+    // If not, continue running this method until they enter a working port.
+    public static Socket connectSocket(String ip, int port) {
+        try { 
+            Socket socket = new Socket(ip, port);
+            return socket;
+        } 
+        /*catch (UnknownHostException e) {
+            System.out.println("\nCOULD NOT FIND A SERVER ON THIS PORT. \nPlease try again.");
+            port = askPort(); } */
+        catch (IOException e) {
+            System.out.println("\nCOULD NOT FIND A SERVER ON THIS PORT. \nPlease try again.");
+            port = askPort(); }
+         catch (IllegalArgumentException e) {
+            System.out.println("\nPORT NUMBER IS TOO LARGE.\nPlease try a number between 1024 and 65535.");
+            port = askPort(); }
+        catch (InputMismatchException e) {
+            System.out.println("INCORRECT PORT FORMAT. \nPlease enter only a number between 1024 and 65535; no letters or special characters.");
+            port = askPort(); }
+        return connectSocket(ip, port);
     }
 }
