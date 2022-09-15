@@ -1,7 +1,7 @@
-// Java IM Program, v0.1.2
+// Java IM Program, v0.1.3
 // CLIENT EXECUTABLE
 //
-// developed by BurntBread007, 5/14/2022
+// developed by BurntBread007
 
 import java.io.*;
 import java.net.InetAddress;
@@ -34,18 +34,27 @@ public class Client {
 
     // MAIN CLIENT METHOD
     public static void main(String[] args) throws UnknownHostException, IOException {
-        System.out.println("\nEnter your username...");
-        String username = scanner.nextLine();
-        if(username == "") { username = "Anonymoose"; }
-        
+        String username = askName();
         String ip = askIp();
         int port = askPort();
+
         Socket socket = connectSocket(ip, port);
         Client client = new Client(socket, username);
 
         System.out.println("\n\nConnected to room! Have fun! \n\n====================\n\tCHAT\n====================");
         client.listenForMessage();
         client.sendMessage();
+    }
+
+    // Obtains username from user, continues to loop until a valid username is given.
+    public static String askName() {
+        String username = "";
+        try {
+            System.out.println("\nEnter your username...");
+            username = scanner.nextLine();
+            if(username == "") { username = "Anonymoose"; }
+        } catch (InputMismatchException e) { System.out.println("!! ERROR | Invalid name, possibly too long or contains invalid characters. Please try again."); askName(); }
+        return username;
     }
 
     // Methods for retrieving and sending messages to and from the connected server.
@@ -64,9 +73,7 @@ public class Client {
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
             }
-        } catch (IOException e) {
-            closeEverything(socket, bufferedReader, bufferedWriter);
-        }
+        } catch (IOException e) { closeEverything(socket, bufferedReader, bufferedWriter); }
     }
     // Additionally, listenForMessage() wanrs user of server disconnect, whenever that may occur.
     public void listenForMessage() {
@@ -78,7 +85,7 @@ public class Client {
                         msgFromGroupChat = bufferedReader.readLine();
                         System.out.println(msgFromGroupChat);
                     } catch (IOException e) {
-                        System.out.println("\nServer has closed. Please restart the program and find a new server to join.");
+                        System.out.println("\n!! ERROR | Server has closed. Please restart the program and find a new server to join.");
                         closeEverything(socket, bufferedReader, bufferedWriter);
                         break;
                     }
@@ -87,17 +94,16 @@ public class Client {
         }).start();
     }
 
+    // Presumably closes all connections to the server.
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
         try {
             if(bufferedReader != null)  { bufferedReader.close(); }
             if(bufferedWriter != null)  { bufferedWriter.close(); }
             if(socket != null)          { socket.close(); }
-        } catch (IOException e) {
-            closeEverything(socket, bufferedReader, bufferedWriter);
-        }
+        } catch (IOException e) { closeEverything(socket, bufferedReader, bufferedWriter); }
     }
 
-    // Takes user input for the needed ip address and port numbers to connect witht the server.
+    // Takes user input for the required IP address and port numbers to connect with the server.
     public static String askIp() throws IOException {
         String ip = "";
         boolean flag = false;
@@ -112,20 +118,31 @@ public class Client {
                 address = InetAddress.getByName(ip);
                 flag = address.isReachable(8000);
                 if(!flag) {
-                    System.out.println("Failed IP connection; possibly timed out or unreachable. Please try again, or type another IP.");
+                    System.out.println("!! ERROR | Failed IP connection; possibly timed out or unreachable. Please try again, or type another IP.");
                 } else { System.out.println("Successfully connected to IP."); }
             }
-        } catch (UnknownHostException e) { System.out.println("Unknown IP or host. Please try again."); askIp(); }
+        } catch (UnknownHostException e) { System.out.println("!! ERROR | Unknown IP or host. Please try again."); askIp(); 
+        } catch (InputMismatchException e) {System.out.println("!! ERROR | Invalid IP address or hostname. Please try again"); askIp(); }
         return ip;
     }
+    // Gets a safe port number from the user. It checks 1. to see if it is a real integer, and 
+    // 2. if the real integer is a valid port number. Loops until a valid number is given.
     public static int askPort() {
-        System.out.println("\nEnter a 4-digit 'room code' to join...\n(Aka port number)");
         int port = 0;
-        port = scanner.nextInt();
-        if( port == 0) { port = 7; }
-        //} catch (InputMismatchException e) {
-        //System.out.println("INCORRECT PORT FORMAT. \nPlease enter only a number between 1024 and 65535; no letters or special characters.");
-        return port;
+        while(true) {
+            System.out.println("\nEnter a port number to host the server...");
+            try { 
+                port = scanner.nextInt();
+                if((port > 65000)||(port < 1)) {
+                    scanner.nextLine();
+                    System.out.println("\n!! ERROR | Port number is too large or in incorrect format.\nPlease try a number between 1 and 65000."); 
+                } else { return port; }
+            }
+            catch (InputMismatchException e) { 
+                System.out.println("\n!! ERROR | Port number is too large or in incorrect format.\nPlease try a number between 1 and 65000."); 
+                scanner.nextLine(); 
+            }
+        }
     }
     // Assuming IP is correct, this tests connection to server on the given port.
     // If not, continue running this method until they enter a working port.
@@ -134,18 +151,18 @@ public class Client {
             Socket socket = new Socket(ip, port);
             return socket;
         } 
-        /*catch (UnknownHostException e) {
-            System.out.println("\nCOULD NOT FIND A SERVER ON THIS PORT. \nPlease try again.");
-            port = askPort(); } */
         catch (IOException e) {
-            System.out.println("\nCOULD NOT FIND A SERVER ON THIS PORT. \nPlease try again.");
-            port = askPort(); }
-         catch (IllegalArgumentException e) {
-            System.out.println("\nPORT NUMBER IS TOO LARGE.\nPlease try a number between 1024 and 65535.");
-            port = askPort(); }
+            System.out.println("\n!! ERROR | Cound not find a server on this port. \nPlease try again.");
+            port = askPort(); 
+        }
+        catch (IllegalArgumentException e) {
+            System.out.println("\n!! ERROR | Port number is too large..\nPlease try a number between 1 and 65000.");
+            port = askPort(); 
+        }
         catch (InputMismatchException e) {
-            System.out.println("INCORRECT PORT FORMAT. \nPlease enter only a number between 1024 and 65535; no letters or special characters.");
-            port = askPort(); }
+            System.out.println("\n!! ERROR | Port number is too large or in incorrect format.\nPlease try a number between 1 and 65000."); 
+            port = askPort(); 
+        }
         return connectSocket(ip, port);
     }
 }

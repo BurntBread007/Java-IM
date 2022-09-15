@@ -1,7 +1,7 @@
-// Java IM Program, v0.1.1
+// Java IM Program, v0.1.3
 // FOR USE WITH SERVER CLASS
 //
-// developed by BurntBread007, 5/14/2022
+// developed by BurntBread007
 
 import java.io.*;
 import java.net.Socket;
@@ -27,8 +27,12 @@ public class ClientHandler implements Runnable{
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.clientUsername = bufferedReader.readLine();
+            
+            // Checks if a new user joins with the same name of someone else. If so, append a number to end end,
+            // depending on how many current users have the same name
             clientHandlers.add(this);
-            nameList.add(clientUsername);
+
+            nameList.add(checkDuplicateName(clientUsername));
 
             String fileName = ".\\txt\\JoinMessages.txt";
             int lines = getNumLines(fileName);
@@ -40,6 +44,26 @@ public class ClientHandler implements Runnable{
             System.out.println(joinMessage);
             printNameList();
         } catch (IOException e) { closeEverything(socket, bufferedReader, bufferedWriter); }
+    }
+
+    public static String checkDuplicateName(String username) {
+        String newName = username;
+        boolean isOriginal = true;
+        boolean isEqual = false;
+        int counter = 1;
+        while(isOriginal) {
+            if(isEqual == false) { isOriginal = false; }
+            for(int x = 0; x < nameList.size(); x++) {
+                if(newName.equals(nameList.get(x))) {
+                    System.out.println("New Username \""+newName+"\" DOES equal "+ nameList.get(x));
+                    isEqual = true;
+                    newName = username+" ("+(counter)+")";
+                    //break;
+                } else { System.out.println("New Username \""+newName+"\" does NOT equal "+ nameList.get(x)); isEqual = false;}
+                counter++;
+            }
+        }
+        return newName;
     }
 
     // Overridden method
