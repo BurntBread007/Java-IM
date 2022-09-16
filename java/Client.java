@@ -1,4 +1,4 @@
-// Java IM Program, v0.1.4
+// Java IM Program, v0.1.5
 // CLIENT EXECUTABLE
 //
 // developed by BurntBread007
@@ -35,7 +35,7 @@ public class Client {
     // MAIN CLIENT METHOD
     public static void main(String[] args) throws UnknownHostException, IOException {
         System.out.println("\n================================");
-        System.out.println(  "| Java IM   v0.1.4 Pre-Release |");
+        System.out.println(  "| Java IM   v0.1.5 Pre-Release |");
         System.out.println(  "| Developed  by  BurntBread007 |");
         System.out.println(  "================================");
 
@@ -63,6 +63,8 @@ public class Client {
     }
 
     // Methods for retrieving and sending messages to and from the connected server.
+    // As of v0.1.5, added a workaround to rename the username in both Client and ClientHandler classes when
+    // the command is called in-chat.
     public void sendMessage() {
         try {
             bufferedWriter.write(username);
@@ -74,6 +76,16 @@ public class Client {
             while(socket.isConnected()) {
                 messageToSend = scanner.nextLine();
                 time = ((LocalTime.now()).toString()).substring(0, 8);
+
+                try {
+                    String command = messageToSend.substring(0,7);
+                    if(command.equals("/rename")) {
+                        username = messageToSend.substring(8);
+                        System.out.println(username);
+                    }
+                    //else if(command.equals("/someothercommand")) {}
+                } catch (IndexOutOfBoundsException e ) {}
+
                 bufferedWriter.write("["+time+"] " + username + " : " + messageToSend);
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
@@ -88,15 +100,22 @@ public class Client {
                 while(socket.isConnected()) {
                     try {
                         msgFromGroupChat = bufferedReader.readLine();
+                        if(msgFromGroupChat.equals(null)) {printServerCloseError(); break;}
                         System.out.println(msgFromGroupChat);
                     } catch (IOException e) {
-                        System.out.println("\n!! ERROR | Server has closed. Please restart the program and find a new server to join.");
-                        closeEverything(socket, bufferedReader, bufferedWriter);
+                        printServerCloseError();
                         break;
-                    }
+                    } catch (NullPointerException e) {
+                        printServerCloseError(); 
+                        break;}
                 }
             }
         }).start();
+    }
+
+    public void printServerCloseError(){
+        System.out.println("\n!! ERROR | Server has closed, or lost connection. Please restart the program and find a new server to join.");
+        closeEverything(socket, bufferedReader, bufferedWriter);
     }
 
     // Presumably closes all connections to the server.

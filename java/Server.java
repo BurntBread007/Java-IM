@@ -1,4 +1,4 @@
-// Java IM Program, v0.1.4
+// Java IM Program, v0.1.5
 // SERVER EXECUTABLE
 //
 // developed by BurntBread007
@@ -15,6 +15,7 @@ public class Server {
     // Private class variables
     private final ServerSocket serverSocket;
     private static Scanner scanner = new Scanner(System.in);
+    public static int PORT = 0;
 
     // Class constructor, connects the server.
     public Server(ServerSocket serverSocket) {
@@ -24,17 +25,18 @@ public class Server {
     // MAIN SERVER METHOD
     public static void main(String[] args) throws IOException {
         System.out.println("\n================================");
-        System.out.println(  "| Java IM   v0.1.4 Pre-Release |");
+        System.out.println(  "| Java IM   v0.1.5 Pre-Release |");
         System.out.println(  "| Developed  by  BurntBread007 |");
         System.out.println(  "================================");
 
         int port = askPort();
         Server server = new Server(connectServerSocket(port));
+        PORT = port;
         
         // Assumes that serverSocket works successfully, prints the start of the server.
         System.out.println("\nServer start success!");
         System.out.println("\nHost Name: "+InetAddress.getLocalHost()+"\nHost Port: "+port);
-        System.out.println("\n\n====================\nSERVER CHAT LOG\n====================");
+        System.out.println("\n\n====================\n  SERVER CHAT LOG\n====================");
         server.startServer();
     }
 

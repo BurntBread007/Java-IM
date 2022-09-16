@@ -1,4 +1,4 @@
-// Java IM Program, v0.1.4
+// Java IM Program, v0.1.5
 // FOR USE WITH SERVER CLASS
 //
 // developed by BurntBread007
@@ -6,11 +6,12 @@
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Random;
 import java.lang.Math;
 
 public class ClientHandler implements Runnable{
-    // Public ArrayLists. They have matching indexes per client, 
-    // E.g. the index 2 has a matching user and username.
+    // Public ArrayLists. They have matching user data per index, 
+    // E.g. the index 2 has a matching user object and username.
     public static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
     public static ArrayList<String> nameList = new ArrayList<>();
 
@@ -19,6 +20,12 @@ public class ClientHandler implements Runnable{
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     private String clientUsername;
+
+    // Miscellaneos variables and constants used
+    // Mostly for the commands, under the checkForCommand() function.
+    private Random rand = new Random();
+    final public static String  VERSION = "v0.1.5";
+    //public static ArrayList<String> commandList = new ArrayList<>();
 
     //Class constructor, connects client stats to ArrayLists, notifies the server and its members.
     public ClientHandler(Socket socket) {
@@ -38,7 +45,6 @@ public class ClientHandler implements Runnable{
 
             String joinMessage = "\nSERVER : " + clientUsername + " " + readRandomLine(randLine, fileName) + "\nThere are now "+ClientHandler.clientHandlers.size()+" users in chat.";
             broadcastEvent(joinMessage);
-            System.out.println(joinMessage);
             printNameList();
         } catch (IOException e) { closeEverything(socket, bufferedReader, bufferedWriter); }
     }
@@ -47,21 +53,74 @@ public class ClientHandler implements Runnable{
     // depending on how many current users have the same name
     public static String checkDuplicateName(String username) {
         String newName = username;
-        boolean isOriginal = true;
+        boolean runAgain = true;
         boolean isEqual = false;
         int counter = 1;
-        while(isOriginal) {
-            if(isEqual == false) { isOriginal = false; }
+        while(runAgain) {
+            if(isEqual == false) { runAgain = false; }
             for(int x = 0; x < nameList.size(); x++) {
                 if(newName.equals(nameList.get(x))) {
-                    System.out.println("New Username \""+newName+"\" DOES equal "+ nameList.get(x));
+                    System.out.println("# | New Username \""+newName+"\" DOES equal \""+ nameList.get(x)+"\"");
                     isEqual = true;
                     newName = username+" ("+(counter)+")";
-                } else { System.out.println("New Username \""+newName+"\" does NOT equal "+ nameList.get(x)); isEqual = false;}
+                } else { System.out.println("# | New Username \""+newName+"\" does NOT equal \""+ nameList.get(x)+"\""); isEqual = false;}
                 counter++;
             }
         }
         return newName;
+    }
+
+    // Checks every message sent from the user to determine several things.
+    // 1. Check if first letter is the command key, "/"
+    // 2. What is the name of the command they are requesting, command
+    // 3. If there is a parameter sent after, afterCommand
+    public void checkForCommand(String message) {
+        try {
+            String commandArg = "/";
+            // Messages are received with the text, "[XX:XX:XX] USER : " before the actual message,
+            // so this int is a starting index for where to read the actual message.
+            int startOfMessage = message.indexOf(" : ")+4;
+
+            if(message.substring(startOfMessage-1, startOfMessage).equals(commandArg)) {
+                String command = message.substring(startOfMessage).toLowerCase()+" ";
+                String afterCommand = command.substring(command.indexOf(" ")+1).trim();
+                command = command.substring(0, command.indexOf(" ")).trim();
+                // COMMAND LIST  IS HERE
+                // ADD COMMANDS AS AN ELSE IF
+                if(command.equals("list"))          { broadcastEvent("There are "+nameList.size()+" users online.\n"); printNameList(); }
+                else if(command.equals("leave"))    { this.closeEverything(socket, bufferedReader, bufferedWriter); }
+                else if(command.equals("fart"))     { broadcastEvent("I just farted harded,,, :flushed emoji: now go shit and piss all over the floor,..\n"); }
+                else if(command.equals("version"))  { broadcastEvent("This server is running on "+VERSION+"\n"); }
+                else if(command.equals("port"))     { broadcastEvent("This server is running on Port # "+Server.PORT);}
+                else if(command.equals("credit") || command.equals("github")) { broadcastEvent("This program was brought to you by BurntBread007,\nfound on burntbread007.github.io\n");}
+                else if(command.equals("help"))     { broadcastEvent("Shut up stupid you don't need help, just figure it out yourself ROFL. (Will update this later)"); }
+                else if(command.equals("rename"))   { 
+                    for(int x = 0; x < nameList.size(); x++) {
+                        if(this.clientUsername.equals(nameList.get(x))) {
+                            String newName = checkDuplicateName(afterCommand);
+                            nameList.set(x, newName);
+                            this.clientUsername = newName;
+                            broadcastMessage("User \""+nameList.get(x)+"\" has changed their name to \""+afterCommand+"\".");
+                            broadcastSingle("Name successfully changed to \""+afterCommand+"\"!\n"); 
+                        }
+                    }
+                }
+                else if(command.equals("coinflip")) {
+                    int coin = rand.nextInt(2);
+                    if(coin == 0) { broadcastEvent("Coinflip results with Heads\n"); }
+                    else { broadcastEvent("Coinflip results with Tails\n");}
+                }
+                else if(command.equals("kick"))     {
+                    for(int x = 0; x < nameList.size(); x++) {
+                        System.out.println("# | Comparing parameter with \""+nameList.get(x)+"\"");
+                        if(afterCommand.equals(nameList.get(x))) {
+                            System.out.println("# | Names match. Closing connection with \""+nameList.get(x)+"\"");
+                            clientHandlers.get(x).closeEverything(socket, bufferedReader, bufferedWriter);
+                        } else { System.out.println("# | Names dont match. No connections closed."); }
+                    }
+                } else { broadcastSingle("Invalid Command!\n"); }
+            }
+        } catch(StringIndexOutOfBoundsException e) { System.out.println("Oops! Error when reading for command.");}
     }
 
     // Overridden method
@@ -71,7 +130,6 @@ public class ClientHandler implements Runnable{
             try {
                 messageFromClient = bufferedReader.readLine();
                 broadcastMessage(messageFromClient);
-                System.out.println(messageFromClient);
                 checkForCommand(messageFromClient);
             } catch (IOException e) {
                 closeEverything(socket, bufferedReader, bufferedWriter);
@@ -80,22 +138,8 @@ public class ClientHandler implements Runnable{
         }
     }
 
-    public void checkForCommand(String message) {
-        try {
-            char commandArg = '/';
-            int startOfMessage = message.indexOf(" : ");
-
-            if(message.charAt(startOfMessage+3) == commandArg) {
-                String command = message.substring(startOfMessage+4);
-                //broadcastEvent("\n");
-                if(command.equals("list")) { printNameList(); }
-                else if(command.substring(0, 4) == "leave") { removeClientHandler(); }
-            }
-        } catch(StringIndexOutOfBoundsException e) { System.out.println("Oops! Error when reading for command.");}
-
-    }
-
     // Sends a received message out to everyone except the original sender.
+    // Used for sending received messages, a notification about the user, etc.
     public void broadcastMessage(String messageToSend) {
         for(ClientHandler clientHandler : clientHandlers) {
             try {
@@ -103,24 +147,30 @@ public class ClientHandler implements Runnable{
                     clientHandler.bufferedWriter.write(messageToSend);
                     clientHandler.bufferedWriter.newLine();
                     clientHandler.bufferedWriter.flush();
+                    System.out.println(messageToSend);
                 }
-            } catch (IOException e) {
-                closeEverything(socket, bufferedReader, bufferedWriter);
-            }
+            } catch (IOException e) { closeEverything(socket, bufferedReader, bufferedWriter); }
         }
     }
     // Same as broadcastMessage(), though it sends the same message to every client.
-    // This is used for listing usernames and number of users connected.
+    // This is used for listing usernames, number of users connected, etc.
     public void broadcastEvent(String messageToSend) {
         for(ClientHandler x : clientHandlers) {
             try {
                 x.bufferedWriter.write(messageToSend);
                 x.bufferedWriter.newLine();
                 x.bufferedWriter.flush();
-            } catch (IOException e) {
-                x.closeEverything(socket, bufferedReader, bufferedWriter);
-            }
+                System.out.println(messageToSend);
+            } catch (IOException e) { x.closeEverything(socket, bufferedReader, bufferedWriter); }
         }
+    }
+    //Same as broadcast functions above, but only sends to a single user.
+    public void broadcastSingle(String messageToSend) {
+        try {
+            bufferedWriter.write(messageToSend);
+            bufferedWriter.newLine();
+            bufferedWriter.flush();
+        } catch (IOException e) { closeEverything(socket, bufferedReader, bufferedWriter); }
     }
 
     // Returns the name of a given index in the clientHandlers ArrayList.
@@ -130,39 +180,9 @@ public class ClientHandler implements Runnable{
         return username;
     }
 
-    // Removes a user from the clientHandler ArrayList.
-    // Keeps the list updated for many connects and disconnects.
-    public void removeClientHandler() {
-        clientHandlers.remove(this);
-        nameList.remove(clientUsername);
-
-        String fileName = ".\\txt\\LeaveMessages.txt";
-        int lines = getNumLines(fileName);
-        int min = 2;
-        int randLine = (int)(Math.random()*((lines+1)-min+1)+min);
-
-        String leaveMessage = "\nSERVER : " + clientUsername + " " + readRandomLine(randLine, fileName) + "\n"+clientHandlers.size()+" users are left.";
-        broadcastEvent(leaveMessage);
-        System.out.println(leaveMessage);
-        printNameList();
-    }
-
-    // First calls removeClientHandler(), then continues to disconnect the actual client.
-    // Checks if each bufferedReader, bufferedWriter, and socket are disconnected; if not, disconnect.
-    public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
-        removeClientHandler();
-        try {
-            if(bufferedReader != null)  { bufferedReader.close(); }
-            if(bufferedWriter != null)  { bufferedWriter.close(); }
-            if(socket != null)          { socket.close(); }
-        } catch (IOException e) {
-            closeEverything(socket, bufferedReader, bufferedWriter);
-        }
-    }
     // Prints the nameList ArrayList.
     public void printNameList() {
         String names = ("Users online: "+nameList+"\n").toString();
-        System.out.println(names);
         broadcastEvent(names);
     }
 
@@ -190,5 +210,33 @@ public class ClientHandler implements Runnable{
         catch (FileNotFoundException e) {}
         catch (IOException e) {}
         return lines;
+    }
+
+    // Removes a user from the clientHandler ArrayList.
+    // Keeps the list updated for many connects and disconnects.
+    public void removeClientHandler() {
+        clientHandlers.remove(this);
+        nameList.remove(clientUsername);
+
+        String fileName = ".\\txt\\LeaveMessages.txt";
+        int lines = getNumLines(fileName);
+        int min = 2;
+        int randLine = (int)(Math.random()*((lines+1)-min+1)+min);
+
+        String leaveMessage = "\nSERVER : " + clientUsername + " " + readRandomLine(randLine, fileName) + "\n"+clientHandlers.size()+" users are left.";
+        broadcastEvent(leaveMessage);
+        printNameList();
+    }
+    // First calls removeClientHandler(), then continues to disconnect the actual client.
+    // Checks if each bufferedReader, bufferedWriter, and socket are disconnected; if not, disconnect.
+    public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
+        removeClientHandler();
+        try {
+            if(bufferedReader != null)  { bufferedReader.close(); }
+            if(bufferedWriter != null)  { bufferedWriter.close(); }
+            if(socket != null)          { socket.close(); }
+        } catch (IOException e) {
+            closeEverything(socket, bufferedReader, bufferedWriter);
+        }
     }
 }
