@@ -1,4 +1,4 @@
-// Java IM Program, v0.1.3
+// Java IM Program, v0.1.4
 // CLIENT EXECUTABLE
 //
 // developed by BurntBread007
@@ -34,6 +34,11 @@ public class Client {
 
     // MAIN CLIENT METHOD
     public static void main(String[] args) throws UnknownHostException, IOException {
+        System.out.println("\n================================");
+        System.out.println(  "| Java IM   v0.1.4 Pre-Release |");
+        System.out.println(  "| Developed  by  BurntBread007 |");
+        System.out.println(  "================================");
+
         String username = askName();
         String ip = askIp();
         int port = askPort();

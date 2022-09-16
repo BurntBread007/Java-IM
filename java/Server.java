@@ -1,4 +1,4 @@
-// Java IM Program, v0.1.3
+// Java IM Program, v0.1.4
 // SERVER EXECUTABLE
 //
 // developed by BurntBread007
@@ -23,6 +23,11 @@ public class Server {
 
     // MAIN SERVER METHOD
     public static void main(String[] args) throws IOException {
+        System.out.println("\n================================");
+        System.out.println(  "| Java IM   v0.1.4 Pre-Release |");
+        System.out.println(  "| Developed  by  BurntBread007 |");
+        System.out.println(  "================================");
+
         int port = askPort();
         Server server = new Server(connectServerSocket(port));
         

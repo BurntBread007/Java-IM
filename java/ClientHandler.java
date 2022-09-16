@@ -1,4 +1,4 @@
-// Java IM Program, v0.1.3
+// Java IM Program, v0.1.4
 // FOR USE WITH SERVER CLASS
 //
 // developed by BurntBread007
@@ -27,11 +27,8 @@ public class ClientHandler implements Runnable{
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.clientUsername = bufferedReader.readLine();
-            
-            // Checks if a new user joins with the same name of someone else. If so, append a number to end end,
-            // depending on how many current users have the same name
-            clientHandlers.add(this);
 
+            clientHandlers.add(this);
             nameList.add(checkDuplicateName(clientUsername));
 
             String fileName = ".\\txt\\JoinMessages.txt";
@@ -46,6 +43,8 @@ public class ClientHandler implements Runnable{
         } catch (IOException e) { closeEverything(socket, bufferedReader, bufferedWriter); }
     }
 
+    // Checks if a new user joins with the same name of someone else. If so, append a number to end end,
+    // depending on how many current users have the same name
     public static String checkDuplicateName(String username) {
         String newName = username;
         boolean isOriginal = true;
@@ -58,7 +57,6 @@ public class ClientHandler implements Runnable{
                     System.out.println("New Username \""+newName+"\" DOES equal "+ nameList.get(x));
                     isEqual = true;
                     newName = username+" ("+(counter)+")";
-                    //break;
                 } else { System.out.println("New Username \""+newName+"\" does NOT equal "+ nameList.get(x)); isEqual = false;}
                 counter++;
             }
@@ -74,11 +72,27 @@ public class ClientHandler implements Runnable{
                 messageFromClient = bufferedReader.readLine();
                 broadcastMessage(messageFromClient);
                 System.out.println(messageFromClient);
+                checkForCommand(messageFromClient);
             } catch (IOException e) {
                 closeEverything(socket, bufferedReader, bufferedWriter);
                 break;
             }
         }
+    }
+
+    public void checkForCommand(String message) {
+        try {
+            char commandArg = '/';
+            int startOfMessage = message.indexOf(" : ");
+
+            if(message.charAt(startOfMessage+3) == commandArg) {
+                String command = message.substring(startOfMessage+4);
+                //broadcastEvent("\n");
+                if(command.equals("list")) { printNameList(); }
+                else if(command.substring(0, 4) == "leave") { removeClientHandler(); }
+            }
+        } catch(StringIndexOutOfBoundsException e) { System.out.println("Oops! Error when reading for command.");}
+
     }
 
     // Sends a received message out to everyone except the original sender.
@@ -132,6 +146,7 @@ public class ClientHandler implements Runnable{
         System.out.println(leaveMessage);
         printNameList();
     }
+
     // First calls removeClientHandler(), then continues to disconnect the actual client.
     // Checks if each bufferedReader, bufferedWriter, and socket are disconnected; if not, disconnect.
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
@@ -151,6 +166,7 @@ public class ClientHandler implements Runnable{
         broadcastEvent(names);
     }
 
+    // Finds a random line from the text file given, used for quirky joining and leaving messages per user.
     public static String readRandomLine(int randLine, String fileName) {
         String ret = null;
         try {
@@ -163,6 +179,7 @@ public class ClientHandler implements Runnable{
         return ret;
     }
 
+    // Checks the number of lines for any text file, notable the leaveMessage and joinMessage ones used in this program.
     public static int getNumLines(String fileName) {
         int lines = 0;
         try {
