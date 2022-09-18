@@ -5,10 +5,10 @@
 
 import java.io.*;
 import java.net.InetAddress;
+import java.util.Scanner;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.InputMismatchException;
-import java.util.Scanner;
 import java.time.LocalTime;
 
 public class Client {
