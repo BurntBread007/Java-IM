@@ -1,4 +1,4 @@
-// Java IM Program, v0.1.5
+// Java IM Program, v0.1.6
 // FOR USE WITH SERVER CLASS
 //
 // developed by BurntBread007
@@ -14,6 +14,8 @@ public class ClientHandler implements Runnable{
     // E.g. the index 2 has a matching user object and username.
     public static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
     public static ArrayList<String> nameList = new ArrayList<>();
+    public static ArrayList<String> joinList = new ArrayList<>();
+    public static ArrayList<String> leaveList = new ArrayList<>();
 
     // Private class variables
     private Socket socket;
@@ -24,7 +26,6 @@ public class ClientHandler implements Runnable{
     // Miscellaneos variables and constants used
     // Mostly for the commands, under the checkForCommand() function.
     private Random rand = new Random();
-    final public static String  VERSION = "v0.1.5";
     //public static ArrayList<String> commandList = new ArrayList<>();
 
     //Class constructor, connects client stats to ArrayLists, notifies the server and its members.
@@ -38,12 +39,30 @@ public class ClientHandler implements Runnable{
             clientHandlers.add(this);
             nameList.add(checkDuplicateName(clientUsername));
 
-            String fileName = ".\\txt\\JoinMessages.txt";
-            int lines = getNumLines(fileName);
-            int min = 2;
-            int randLine = (int)(Math.random()*((lines+1)-min+1)+min);
+            // Opens Join Message file, reads all lines, adding each one to an ArrayList.
+            try {
+                String textFile = "text/JoinMessages.txt";
+                InputStreamReader textStream = new InputStreamReader(getClass().getResourceAsStream(textFile));
+                BufferedReader fileBuffer = new BufferedReader(textStream);
+                String joinLine;
+                while((joinLine = fileBuffer.readLine()) != null){
+                    joinList.add(joinLine);
+                }
 
-            String joinMessage = "\nSERVER : " + clientUsername + " " + readRandomLine(randLine, fileName) + "\nThere are now "+ClientHandler.clientHandlers.size()+" users in chat.";
+                textFile = "text/LeaveMessages.txt";
+                textStream = new InputStreamReader(getClass().getResourceAsStream(textFile));
+                fileBuffer = new BufferedReader(textStream);
+                String leaveLine;
+                while((leaveLine = fileBuffer.readLine()) != null){
+                    leaveList.add(leaveLine);
+                }
+            } catch (FileNotFoundException e) {
+                joinList.add("joined.");
+                leaveList.add("left."); 
+                broadcastEvent("Quirky leave message file not found. Reverting to default."); 
+            }
+
+            String joinMessage = "\nSERVER : " + clientUsername + " " + readRandomLine(joinList) + "\nThere are now "+ClientHandler.clientHandlers.size()+" users in chat.";
             broadcastEvent(joinMessage);
             printNameList();
         } catch (IOException e) { closeEverything(socket, bufferedReader, bufferedWriter); }
@@ -87,13 +106,23 @@ public class ClientHandler implements Runnable{
                 command = command.substring(0, command.indexOf(" ")).trim();
                 // COMMAND LIST  IS HERE
                 // ADD COMMANDS AS AN ELSE IF
-                if(command.equals("list"))          { broadcastEvent("There are "+nameList.size()+" users online.\n"); printNameList(); }
-                else if(command.equals("leave"))    { this.closeEverything(socket, bufferedReader, bufferedWriter); }
-                else if(command.equals("fart"))     { broadcastEvent("I just farted harded,,, :flushed emoji: now go shit and piss all over the floor,..\n"); }
-                else if(command.equals("version"))  { broadcastEvent("This server is running on "+VERSION+"\n"); }
-                else if(command.equals("port"))     { broadcastEvent("This server is running on Port # "+Server.PORT);}
-                else if(command.equals("credit") || command.equals("github")) { broadcastEvent("This program was brought to you by BurntBread007,\nfound on burntbread007.github.io\n");}
-                else if(command.equals("help"))     { broadcastEvent("Shut up stupid you don't need help, just figure it out yourself ROFL. (Will update this later)"); }
+                if     (command.equals("list"))     { 
+                    broadcastEvent("There are "+nameList.size()+" users online."); 
+                    printNameList(); }
+                else if(command.equals("leave"))    { 
+                    this.closeEverything(socket, bufferedReader, bufferedWriter); }
+                else if(command.equals("fart"))     { 
+                    broadcastEvent("I just farted harded,,, :flushed emoji: now go shit and piss all over the floor,.."); }
+                else if(command.equals("version"))  { 
+                    broadcastEvent("This server is running on "+Server.VERSION); }
+                else if(command.equals("ip"))       { 
+                    broadcastEvent("This server is running on IP "+Server.IP); }
+                else if(command.equals("port"))     { 
+                    broadcastEvent("This server is running on Port # "+Server.PORT+"\n");}
+                else if(command.equals("credit") || command.equals("github")) { 
+                    broadcastEvent("This program was brought to you by BurntBread007,\nfound on burntbread007.github.io");}
+                else if(command.equals("help"))     { 
+                    broadcastEvent("Shut up stupid you don't need help, just figure it out yourself ROFL. (Will update this later)"); }
                 else if(command.equals("rename"))   { 
                     for(int x = 0; x < nameList.size(); x++) {
                         if(this.clientUsername.equals(nameList.get(x))) {
@@ -101,10 +130,8 @@ public class ClientHandler implements Runnable{
                             nameList.set(x, newName);
                             this.clientUsername = newName;
                             broadcastMessage("User \""+nameList.get(x)+"\" has changed their name to \""+afterCommand+"\".");
-                            broadcastSingle("Name successfully changed to \""+afterCommand+"\"!\n"); 
-                        }
-                    }
-                }
+                            broadcastSingle("Name successfully changed to \""+afterCommand+"\"!"); 
+                        }   }   }
                 else if(command.equals("coinflip")) {
                     int coin = rand.nextInt(2);
                     if(coin == 0) { broadcastEvent("Coinflip results with Heads\n"); }
@@ -112,13 +139,14 @@ public class ClientHandler implements Runnable{
                 }
                 else if(command.equals("kick"))     {
                     for(int x = 0; x < nameList.size(); x++) {
-                        System.out.println("# | Comparing parameter with \""+nameList.get(x)+"\"");
+                        System.out.println("# | Comparing \""+afterCommand+"\" with \""+nameList.get(x)+"\"");
                         if(afterCommand.equals(nameList.get(x))) {
                             System.out.println("# | Names match. Closing connection with \""+nameList.get(x)+"\"");
                             clientHandlers.get(x).closeEverything(socket, bufferedReader, bufferedWriter);
-                        } else { System.out.println("# | Names dont match. No connections closed."); }
+                        } else { System.out.println("# | Names don't match. No connections closed."); }
                     }
-                } else { broadcastSingle("Invalid Command!\n"); }
+                } else { broadcastSingle("Invalid Command!"); }
+                broadcastEvent("");
             }
         } catch(StringIndexOutOfBoundsException e) { System.out.println("Oops! Error when reading for command.");}
     }
@@ -129,6 +157,7 @@ public class ClientHandler implements Runnable{
         while(socket.isConnected()) {
             try {
                 messageFromClient = bufferedReader.readLine();
+                System.out.println(messageFromClient);
                 broadcastMessage(messageFromClient);
                 checkForCommand(messageFromClient);
             } catch (IOException e) {
@@ -147,7 +176,6 @@ public class ClientHandler implements Runnable{
                     clientHandler.bufferedWriter.write(messageToSend);
                     clientHandler.bufferedWriter.newLine();
                     clientHandler.bufferedWriter.flush();
-                    System.out.println(messageToSend);
                 }
             } catch (IOException e) { closeEverything(socket, bufferedReader, bufferedWriter); }
         }
@@ -187,29 +215,13 @@ public class ClientHandler implements Runnable{
     }
 
     // Finds a random line from the text file given, used for quirky joining and leaving messages per user.
-    public static String readRandomLine(int randLine, String fileName) {
+    public static String readRandomLine(ArrayList<String> array) {
         String ret = null;
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(fileName));
-            for (int i = 0; i < randLine - 1; i++) { ret = reader.readLine(); }
-            reader.close();
-        }
-        catch (FileNotFoundException e) {}
-        catch (IOException e) {}
+        int lines = array.size()-1;
+        int min = 2;
+        int randLine = (int)(Math.random()*((lines+1)-min+1)+min);
+        ret = array.get(randLine);
         return ret;
-    }
-
-    // Checks the number of lines for any text file, notable the leaveMessage and joinMessage ones used in this program.
-    public static int getNumLines(String fileName) {
-        int lines = 0;
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(fileName));
-            lines = (int)(reader.lines().count());
-            reader.close();
-        }
-        catch (FileNotFoundException e) {}
-        catch (IOException e) {}
-        return lines;
     }
 
     // Removes a user from the clientHandler ArrayList.
@@ -218,12 +230,7 @@ public class ClientHandler implements Runnable{
         clientHandlers.remove(this);
         nameList.remove(clientUsername);
 
-        String fileName = ".\\txt\\LeaveMessages.txt";
-        int lines = getNumLines(fileName);
-        int min = 2;
-        int randLine = (int)(Math.random()*((lines+1)-min+1)+min);
-
-        String leaveMessage = "\nSERVER : " + clientUsername + " " + readRandomLine(randLine, fileName) + "\n"+clientHandlers.size()+" users are left.";
+        String leaveMessage = "\nSERVER : " + clientUsername + " " + readRandomLine(leaveList) + "\n"+clientHandlers.size()+" users are left.";
         broadcastEvent(leaveMessage);
         printNameList();
     }

@@ -1,4 +1,4 @@
-// Java IM Program, v0.1.5
+// Java IM Program, v0.1.6
 // CLIENT EXECUTABLE
 //
 // developed by BurntBread007
@@ -35,7 +35,7 @@ public class Client {
     // MAIN CLIENT METHOD
     public static void main(String[] args) throws UnknownHostException, IOException {
         System.out.println("\n================================");
-        System.out.println(  "| Java IM   v0.1.5 Pre-Release |");
+        System.out.println(  "| Java IM   v0.1.6 Pre-Release |");
         System.out.println(  "| Developed  by  BurntBread007 |");
         System.out.println(  "================================");
 
@@ -133,7 +133,7 @@ public class Client {
         boolean flag = false;
         InetAddress address;
         try {
-            while(flag == false) {
+            while(!flag) {
                 System.out.println("\nEnter the IP you wish to join... \n(Use \"localhost\" for your own computer.)");
                 ip = scanner.nextLine();
                 if(ip == "") { ip = "localhost"; }
@@ -154,7 +154,7 @@ public class Client {
     public static int askPort() {
         int port = 0;
         while(true) {
-            System.out.println("\nEnter a port number to host the server...");
+            System.out.println("\nEnter the hosted port number to join...");
             try { 
                 port = scanner.nextInt();
                 if((port > 65000)||(port < 1)) {
