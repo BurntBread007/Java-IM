@@ -17,9 +17,12 @@ public class Server {
     private static Scanner scanner = new Scanner(System.in);
 
     // Supposedly 'CONSTANTS' for references.
-    public static int PORT = 0;
-    public static InetAddress IP = null;
-    final public static String  VERSION = "v0.1.6";
+          static int PORT;
+          static InetAddress IP;
+    final static String VERSION =       "v0.1.7";
+    final static String JOIN_FILE =     "./text/JoinMessages.txt";
+    final static String LEAVE_FILE =    "./text/LeaveMessages.txt"; 
+
 
     // Class constructor, connects the server.
     public Server(ServerSocket serverSocket) {
@@ -29,7 +32,7 @@ public class Server {
     // MAIN SERVER METHOD
     public static void main(String[] args) throws IOException {
         System.out.println("\n================================");
-        System.out.println(  "| Java IM   v0.1.6 Pre-Release |");
+        System.out.println(  "| Java IM   v0.1.7 Pre-Release |");
         System.out.println(  "| Developed  by  BurntBread007 |");
         System.out.println(  "================================");
 

@@ -83,7 +83,6 @@ public class Client {
                         username = messageToSend.substring(8);
                         System.out.println(username);
                     }
-                    //else if(command.equals("/someothercommand")) {}
                 } catch (IndexOutOfBoundsException e ) {}
 
                 bufferedWriter.write("["+time+"] " + username + " : " + messageToSend);
@@ -130,21 +129,19 @@ public class Client {
     // Takes user input for the required IP address and port numbers to connect with the server.
     public static String askIp() throws IOException {
         String ip = "";
-        boolean flag = false;
         InetAddress address;
         try {
-            while(!flag) {
+            do {
                 System.out.println("\nEnter the IP you wish to join... \n(Use \"localhost\" for your own computer.)");
                 ip = scanner.nextLine();
                 if(ip == "") { ip = "localhost"; }
 
                 System.out.println("Establishing connection...");
                 address = InetAddress.getByName(ip);
-                flag = address.isReachable(8000);
-                if(!flag) {
+                if(!address.isReachable(8000)) {
                     System.out.println("!! ERROR | Failed IP connection; possibly timed out or unreachable. Please try again, or type another IP.");
-                } else { System.out.println("Successfully connected to IP."); }
-            }
+                } else { System.out.println("Successfully connected to IP."); break; }
+            } while (true);
         } catch (UnknownHostException e) { System.out.println("!! ERROR | Unknown IP or host. Please try again."); askIp(); 
         } catch (InputMismatchException e) {System.out.println("!! ERROR | Invalid IP address or hostname. Please try again"); askIp(); }
         return ip;
