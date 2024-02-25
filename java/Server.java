@@ -1,4 +1,4 @@
-// Java IM Program, v0.1.6
+// Java IM Program, v0.1.8a
 // SERVER EXECUTABLE
 //
 // developed by BurntBread007
@@ -14,92 +14,69 @@ import java.util.Scanner;
 public class Server {
     // Private class variables
     private final ServerSocket serverSocket;
-    private static Scanner scanner = new Scanner(System.in);
+    private final static Scanner stdin = new Scanner(System.in);
+    final static String VERSION =    "v0.1.8a";
+    final static String TEXT_PATH = "./text/";
+    final static String JOIN_FILE =  TEXT_PATH+"JoinMessages.txt";
+    final static String LEAVE_FILE = TEXT_PATH+"LeaveMessages.txt"; 
+    static int PORT;
+    static InetAddress IP;
 
-    // Supposedly 'CONSTANTS' for references.
-          static int PORT;
-          static InetAddress IP;
-    final static String VERSION =       "v0.1.7";
-    final static String JOIN_FILE =     "./text/JoinMessages.txt";
-    final static String LEAVE_FILE =    "./text/LeaveMessages.txt"; 
-
-
-    // Class constructor, connects the server.
+    // Class constructor; connects the server.
     public Server(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
     }
 
-    // MAIN SERVER METHOD
-    public static void main(String[] args) throws IOException {
+    // Main Server method; 
+    public static void main (final String[] args) throws IOException {
         System.out.println("\n================================");
-        System.out.println(  "| Java IM   v0.1.7 Pre-Release |");
+        System.out.println(  "| Java IM   v0.1.8a Pre-Release |");
         System.out.println(  "| Developed  by  BurntBread007 |");
         System.out.println(  "================================");
 
         // Asks for port, assings servre var, and assigns given IP and PORT to their corresponding constants.
-        int port = askPort();
-        Server server = new Server(connectServerSocket(port));
-        PORT = port;
+        PORT = askPort();
         IP = InetAddress.getLocalHost();
+        final Server server = new Server(connectServerSocket(PORT));
         
         // Assumes that serverSocket works successfully, prints the start of the server.
         System.out.println("\nServer start success!");
-        System.out.println("\nHost Name: "+IP+"\nHost Port: "+port);
+        System.out.println("\nHost Name: "+IP+"\nHost Port: "+PORT);
         System.out.println("\n\n====================\n  SERVER CHAT LOG\n====================");
+        stdin.close();
         server.startServer();
     }
-
+    // Gets a safe port number from the user.
+    public static int askPort () {
+        System.out.printf("%nEnter the hosted port number to join...%n");
+        try {
+            final int port = stdin.nextInt();
+            final boolean inRange = (port <= 65535) && (port >= 1);
+            return inRange ? port : askPort();
+        }
+        catch (InputMismatchException e) { return askPort(); }
+    }
     // Connects server socket to given port.
-    public static ServerSocket connectServerSocket(int port) {
-        while(true) {
-            try { 
-                System.out.println("Initializing server on port "+port+"...");
-                ServerSocket serverSocket = new ServerSocket(port);
-                return serverSocket; 
-            } 
-            catch (BindException e) {
-                System.out.println("\n!! ERROR | An application on this device is already using the port you entered. \nPlease enter another port number, or close other programs/servers and try again.");
-                port = askPort(); 
-            }
-            catch (IOException e) {
-                System.out.println("!! ERROR | The server could not be started. Please restart the program and try again.");
-                port = askPort();  
-            }
+    public static ServerSocket connectServerSocket (final int port) {
+        try {
+            System.out.printf("%nInitializing server on port %s...", port);
+            return new ServerSocket(port);
         }
+        catch (BindException e) { System.out.println("\n!! ERROR | An application on this device is already using the port you entered. \nPlease enter another port number, or close other programs/servers and try again."); }
+        catch (IOException e) { System.out.println("!! ERROR | The server could not be started. Please restart the program and try again."); }
+        return connectServerSocket(port);
     }
-
-    // Gets a safe port number from the user. It checks 1. to see if it is a real integer, and 
-    // 2. if the real integer is a valid port number. Loops until a valid number is given.
-    public static int askPort() {
-        int port = 0;
-        while(true) {
-            System.out.println("\nEnter a port number to host the server...");
-            try { 
-                port = scanner.nextInt();
-                if((port > 65000)||(port < 1)) {
-                    scanner.nextLine();
-                    System.out.println("\n!! ERROR | Port number is too large or in incorrect format.\nPlease try a number between 1 and 65000."); 
-                } else { return port; }
-            }
-            catch (InputMismatchException e) { 
-                System.out.println("\n!! ERROR | Port number is too large or in incorrect format.\nPlease try a number between 1 and 65000."); 
-                scanner.nextLine(); 
-            }
-        }
-    }
-
     // Starts a ClientHandler thread to each newly connected user.
     public void startServer() {
         try {
             while(!serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
-                ClientHandler clientHandler = new ClientHandler(socket);
-                Thread thread = new Thread(clientHandler);
+                final ClientHandler clientHandler = new ClientHandler(socket);
+                final Thread thread = new Thread(clientHandler);
                 thread.start();
             }
         } catch (IOException e) {System.out.println("!! ERROR | The server could not be started. Please restart the program and try again.");}
     }
-
     // Disconnects the server.
     public void closeServerSocket() {
         try {

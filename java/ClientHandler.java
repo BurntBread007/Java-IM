@@ -1,4 +1,4 @@
-// Java IM Program, v0.1.7
+// Java IM Program, v0.1.8a
 // FOR USE WITH SERVER CLASS
 //
 // developed by BurntBread007
