@@ -36,7 +36,7 @@ public class Client {
     // Main Client method; gets values needed and starts message listeners.
     public static void main ( String[] args) throws UnknownHostException, IOException {
         System.out.println("\n================================");
-        System.out.println(  "| Java IM   v0.1.8a Pre-Release |");
+        System.out.println(  "| Java IM  v0.1.8a Pre-Release |");
         System.out.println(  "| Developed  by  BurntBread007 |");
         System.out.println(  "================================");
 

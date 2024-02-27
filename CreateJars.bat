@@ -1,0 +1,2 @@
+jar cvfm0 ./jars/Server.jar ./classes/manifests/MANIFEST_SERVER.MF ./classes/txt/*.txt ./classes/Server.class ./classes/ServerMeta.class ./classes/ClientHandler.class
+jar cvfm0 ./jars/Client.jar ./classes/manifests/MANIFEST_CLIENT.MF ./classes/Client.class ./classes/Client$1.class

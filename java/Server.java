@@ -16,7 +16,7 @@ public class Server {
     private final ServerSocket serverSocket;
     private final static Scanner stdin = new Scanner(System.in);
     final static String VERSION =    "v0.1.8a";
-    final static String TEXT_PATH = "./text/";
+    final static String TEXT_PATH = "./txt/";
     final static String JOIN_FILE =  TEXT_PATH+"JoinMessages.txt";
     final static String LEAVE_FILE = TEXT_PATH+"LeaveMessages.txt"; 
     static int PORT;
@@ -30,7 +30,7 @@ public class Server {
     // Main Server method; 
     public static void main (final String[] args) throws IOException {
         System.out.println("\n================================");
-        System.out.println(  "| Java IM   v0.1.8a Pre-Release |");
+        System.out.println(  "| Java IM  v0.1.8a Pre-Release |");
         System.out.println(  "| Developed  by  BurntBread007 |");
         System.out.println(  "================================");
 
@@ -41,7 +41,7 @@ public class Server {
         
         // Assumes that serverSocket works successfully, prints the start of the server.
         System.out.println("\nServer start success!");
-        System.out.println("\nHost Name: "+IP+"\nHost Port: "+PORT);
+        System.out.printf("%nHost Name: %s%nHost Port: %s%n", IP, PORT);
         System.out.println("\n\n====================\n  SERVER CHAT LOG\n====================");
         stdin.close();
         server.startServer();
